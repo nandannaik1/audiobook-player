@@ -7,13 +7,19 @@
         android:label="Audiobook Player"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        
         <activity
-            android:name="com.example.audiobookplayer.MainActivity"
+            android:name="com.example.audiobookplayer.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.example.audiobookplayer.MainActivity"
+            android:exported="false" />
+            
     </application>
 </manifest>
