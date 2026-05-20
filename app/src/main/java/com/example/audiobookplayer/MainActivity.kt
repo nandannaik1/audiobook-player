@@ -1,4 +1,4 @@
-package com.example.audiobookplayer // Make sure this matches your project's package name
+package com.example.audiobookplayer
 
 import android.app.Activity
 import android.content.Context
@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.media.PlaybackParams
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -24,7 +23,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import java.io.IOException
 import java.util.Locale
 import kotlin.math.abs
 
@@ -142,7 +140,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleSelectedFile(uri: Uri) {
         try {
-            // Take persistable permission to keep accessing the file after device reboots
             val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
             contentResolver.takePersistableUriPermission(uri, takeFlags)
         } catch (e: SecurityException) {
@@ -160,11 +157,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun getFileNameFromUri(uri: Uri): String {
         var name = uri.lastPathSegment ?: "Unknown Audio File"
-        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-            if (nameIndex != -1 && cursor.moveToFirst()) {
-                name = cursor.getString(nameIndex)
+        try {
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1 && cursor.moveToFirst()) {
+                    name = cursor.getString(nameIndex)
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return name
     }
@@ -182,7 +183,8 @@ class MainActivity : AppCompatActivity() {
                 )
                 setDataSource(applicationContext, uri)
                 prepare()
-                seekTo(savedPosition)
+                // Safely coerce position to prevent out-of-bounds seeks
+                seekTo(savedPosition.coerceAtMost(duration))
                 applyPlaybackSpeed(currentSpeed)
             }
 
@@ -194,8 +196,9 @@ class MainActivity : AppCompatActivity() {
                 tvStatus.text = "Paused"
             }
 
-        } catch (e: IOException) {
-            Toast.makeText(this, "Error loading audio file", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            // Changed from catch IOException to catch Exception to prevent SecurityException crashes
+            Toast.makeText(this, "Could not load the audio file", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }
     }
@@ -203,7 +206,6 @@ class MainActivity : AppCompatActivity() {
     private fun startPlayback() {
         mediaPlayer?.let { player ->
             player.start()
-            // Re-apply playback parameters since starting can reset them on older API levels
             applyPlaybackSpeed(currentSpeed)
             tvStatus.text = "Playing"
             updateHandler.post(updateProgressTask)
@@ -259,8 +261,6 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val isPlaying = player.isPlaying
                     player.playbackParams = player.playbackParams.setSpeed(speed)
-                    // If the player was paused, setting params might trigger playing state
-                    // in some implementations, so we enforce the correct state.
                     if (!isPlaying) {
                         player.pause()
                     }
@@ -272,7 +272,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        // Setup Swiping Interval Options (5s, 10s, 15s, 30s, 60s)
         val intervals = listOf(5, 10, 15, 30, 60)
         val intervalAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, intervals.map { "$it sec" })
         intervalAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -288,7 +287,6 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Setup Playback Speed Options
         val speeds = listOf(0.5f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.0f, 1.05f, 1.1f, 1.15f, 1.2f, 1.25f, 1.5f, 1.75f, 2.0f)
         val speedAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, speeds.map { String.format(Locale.US, "%.2fx", it) })
         speedAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -323,13 +321,12 @@ class MainActivity : AppCompatActivity() {
                 val diffX = e2.x - e1.x
                 val diffY = e2.y - e1.y
 
-                // Confirm horizontal movement is larger than vertical movement
                 if (abs(diffX) > abs(diffY)) {
                     if (abs(diffX) > SWIPE_THRESHOLD && abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
                         if (diffX > 0) {
-                            seekForward() // Swipe Right
+                            seekForward()
                         } else {
-                            seekBackward() // Swipe Left
+                            seekBackward()
                         }
                         return true
                     }
@@ -337,11 +334,9 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
 
-            // Down action needs to return true for other gestures (fling/tap) to be evaluated
             override fun onDown(e: MotionEvent): Boolean = true
         })
 
-        // Pass touch events from FrameLayout to GestureDetector
         touchArea.setOnTouchListener { _, event ->
             gestureDetector.onTouchEvent(event)
             true
