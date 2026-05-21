@@ -10,12 +10,14 @@
     <!-- Top Settings Panel -->
     <LinearLayout
         android:id="@+id/settingsPanel"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="12dp"
         android:background="#2C2C2E"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -120,14 +122,16 @@
     <!-- Control Buttons Row -->
     <LinearLayout
         android:id="@+id/controlRow"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
         android:padding="8dp"
         android:background="#2C2C2E"
         android:weightSum="4"
-        app:layout_constraintTop_toBottomOf="@id/touchArea">
+        app:layout_constraintTop_toBottomOf="@id/touchArea"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <Button
             android:id="@+id/btnPrevious"
