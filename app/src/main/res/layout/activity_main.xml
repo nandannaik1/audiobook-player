@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#1C1C1E"
-    tools:context=".MainActivity">
+    tools:context="com.example.audiobookplayer.MainActivity">
 
     <!-- Top Settings Panel -->
     <LinearLayout
@@ -139,7 +139,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="2dp"
-            android:text="⏮ Prev"
+            android:text="Prev"
             android:textSize="12sp" />
 
         <Button
@@ -148,7 +148,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="2dp"
-            android:text="⏭ Next"
+            android:text="Next"
             android:textSize="12sp" />
 
         <Button
