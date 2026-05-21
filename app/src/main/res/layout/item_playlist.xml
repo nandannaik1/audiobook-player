@@ -40,10 +40,13 @@
             android:singleLine="true" />
     </LinearLayout>
 
-    <ImageView
+    <TextView
         android:id="@+id/ivDragHandle"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@android:drawable/ic_menu_sort_by_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="::"
+        android:textColor="#888888"
+        android:textSize="18sp"
+        android:padding="8dp"
         android:contentDescription="Drag Handle" />
 </LinearLayout>
